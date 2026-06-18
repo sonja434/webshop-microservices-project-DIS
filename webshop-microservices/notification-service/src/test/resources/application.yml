@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: notification-service
+  cloud:
+    config:
+      enabled: false
+  rabbitmq:
+    host: localhost
+    port: 5672
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: test@example.com
+    password: testpassword
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.actuate.autoconfigure.mail.MailHealthContributorAutoConfiguration
+
+eureka:
+  client:
+    enabled: false
+
+management:
+  health:
+    mail:
+      enabled: false
