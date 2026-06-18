@@ -59,6 +59,18 @@ Klijent → API Gateway (8080)
     ┌─────────────────────────┐
     │  Config Server (8888)   │
     └─────────────────────────┘
+              ↓
+    ┌──────────────────────────────────────────┐
+    │           Monitoring & Logging           │
+    │                                          │
+    │  Prometheus → Alertmanager → Email       │
+    │  (9090)        (9093)                    │
+    │       ↓                                  │
+    │  Grafana (3000)                          │
+    │                                          │
+    │  Fluentd → Elasticsearch → Kibana        │
+    │  (24224)    (9200)          (5601)        │
+    └──────────────────────────────────────────┘
 ```
 
 ### Komunikacija
@@ -146,6 +158,7 @@ GitHub Actions pipeline se nalazi u `.github/workflows/ci-cd.yml`.
 **1. Build and Test** (svaki push i pull request):
 - Kompajliranje koda
 - Pokretanje unit testova
+- Pokretanje integracionih testova
 - Čuvanje rezultata testova kao artifact
 
 **2. Build Docker Images** (samo `master` grana):
@@ -179,16 +192,40 @@ Rezultati se mogu pratiti na: `https://github.com/sonja434/webshop-microservices
 | Eureka Dashboard | http://localhost:8761 | - |
 | RabbitMQ Management | http://localhost:15672 | guest/guest |
 | Prometheus | http://localhost:9090 | - |
+| Alertmanager | http://localhost:9093 | - |
 | Grafana | http://localhost:3000 | admin/admin |
+| Kibana | http://localhost:5601 | - |
+| Elasticsearch | http://localhost:9200 | - |
 | API Gateway | http://localhost:8080 | - |
 
 ### Prometheus metrike:
 Svaki mikroservis izlaže metrike na `/actuator/prometheus` endpointu.
 Prometheus prikuplja metrike svakih 15 sekundi.
 
+### Alertmanager – alarmi:
+Alertmanager šalje email notifikacije kada se dese sledeći eventi:
+- **ServiceDown** – servis nije dostupan više od 1 minuta
+- **CircuitBreakerOpen** – circuit breaker je otvoren
+- **CircuitBreakerHighFailureRate** – stopa grešaka veća od 50%
+- **HighMemoryUsage** – upotreba heap memorije veća od 85%
+- **HighErrorRate** – visoka stopa HTTP 5xx grešaka
+- **SlowResponseTime** – prosečno vreme odgovora duže od 2 sekunde
+
 ### Grafana dashboards:
 Nakon pokretanja sistema, Grafana je dostupna na http://localhost:3000.
 Dodati Prometheus kao data source: `http://prometheus:9090`
+Uvesti dashboard sa ID: `11378` za Spring Boot metrike.
+
+### EFK – centralizovano logovanje:
+Svi mikroservisi šalju logove u Fluentd koji ih prosleđuje u Elasticsearch.
+Logovi se mogu pregledati u Kibani na http://localhost:5601.
+
+**Podešavanje Kibane:**
+1. Otvoriti http://localhost:5601
+2. Ići na **Management** → **Index Patterns**
+3. Kreirati index pattern: `webshop-*`
+4. Izabrati `@timestamp` kao Time Field
+5. Pregledati logove u **Discover**
 
 ---
 
@@ -267,5 +304,8 @@ mvn surefire-report:report
 - **PostgreSQL 15** – baza podataka (po jedan DB per servis)
 - **Resilience4j** – Circuit Breaker
 - **Docker & Docker Compose**
-- **Prometheus & Grafana** – monitoring
+- **Prometheus & Grafana** – monitoring performansi
+- **Alertmanager** – email alarmi i notifikacije
+- **Elasticsearch + Fluentd + Kibana (EFK)** – centralizovano logovanje
+- **Kubernetes** – klasterizacija i orkestracija
 - **GitHub Actions** – CI/CD pipeline
