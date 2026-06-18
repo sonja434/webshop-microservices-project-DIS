@@ -1,0 +1,72 @@
+groups:
+  - name: webshop-alerts
+    rules:
+
+      # ============================================================
+      # SERVICE DOWN ALARMI
+      # ============================================================
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} has been down for more than 1 minute."
+
+      # ============================================================
+      # CIRCUIT BREAKER ALARMI
+      # ============================================================
+      - alert: CircuitBreakerOpen
+        expr: resilience4j_circuitbreaker_state{state="open"} == 1
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Circuit Breaker OPEN - {{ $labels.name }}"
+          description: "Circuit breaker {{ $labels.name }} is OPEN in service {{ $labels.job }}."
+
+      - alert: CircuitBreakerHighFailureRate
+        expr: resilience4j_circuitbreaker_failure_rate > 50
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High failure rate - {{ $labels.name }}"
+          description: "Circuit breaker {{ $labels.name }} failure rate is {{ $value }}%."
+
+      # ============================================================
+      # VISOKA UPOTREBA MEMORIJE
+      # ============================================================
+      - alert: HighMemoryUsage
+        expr: jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.85
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage - {{ $labels.job }}"
+          description: "Service {{ $labels.job }} is using more than 85% of heap memory."
+
+      # ============================================================
+      # VISOK BROJ GRESAKA
+      # ============================================================
+      - alert: HighErrorRate
+        expr: rate(http_server_requests_seconds_count{status=~"5.."}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate - {{ $labels.job }}"
+          description: "Service {{ $labels.job }} has high HTTP 5xx error rate."
+
+      # ============================================================
+      # SPORI ODGOVORI
+      # ============================================================
+      - alert: SlowResponseTime
+        expr: http_server_requests_seconds_sum / http_server_requests_seconds_count > 2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow response time - {{ $labels.job }}"
+          description: "Service {{ $labels.job }} average response time is over 2 seconds."

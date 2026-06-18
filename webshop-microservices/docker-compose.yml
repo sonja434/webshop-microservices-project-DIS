@@ -279,16 +279,36 @@ services:
       - MAIL_USERNAME=${MAIL_USERNAME:-test@example.com}
       - MAIL_PASSWORD=${MAIL_PASSWORD:-password}
 
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus-data:/prometheus
-    networks:
-      - webshop-network
+prometheus:
+  image: prom/prometheus:latest
+  container_name: prometheus
+  ports:
+    - "9090:9090"
+  volumes:
+    - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    - ./monitoring/prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml
+    - prometheus-data:/prometheus
+  networks:
+    - webshop-network
+  command:
+    - '--config.file=/etc/prometheus/prometheus.yml'
+    - '--storage.tsdb.path=/prometheus'
+
+alertmanager:
+  image: prom/alertmanager:latest
+  container_name: alertmanager
+  ports:
+    - "9093:9093"
+  volumes:
+    - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+  networks:
+    - webshop-network
+  command:
+    - '--config.file=/etc/alertmanager/alertmanager.yml'
+    - '--storage.path=/alertmanager'
+  environment:
+    - MAIL_USERNAME=${MAIL_USERNAME:-ssekulic239@gmail.com}
+    - MAIL_PASSWORD=${MAIL_PASSWORD:-tzpy vlji fyue udhd}
 
   grafana:
     image: grafana/grafana:latest
