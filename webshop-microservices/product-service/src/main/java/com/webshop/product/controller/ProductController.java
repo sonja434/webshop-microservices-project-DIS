@@ -20,7 +20,9 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<ProductResponse> createProduct(
-            @Valid @RequestBody ProductRequest request) {
+            @Valid @RequestBody ProductRequest request,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+        requireAdmin(role);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(productService.createProduct(request));
     }
@@ -50,13 +52,24 @@ public class ProductController {
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable Long id,
-            @Valid @RequestBody ProductRequest request) {
+            @Valid @RequestBody ProductRequest request,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+        requireAdmin(role);
         return ResponseEntity.ok(productService.updateProduct(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteProduct(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+        requireAdmin(role);
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private void requireAdmin(String role) {
+        if (role == null || !role.equals("ADMIN")) {
+            throw new RuntimeException("Access denied: ADMIN role required");
+        }
     }
 }

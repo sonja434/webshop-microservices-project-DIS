@@ -70,6 +70,7 @@ services:
       options:
         fluentd-address: localhost:24224
         tag: webshop.api-gateway
+        fluentd-async: "true"
 
   # ============================================================
   # MESSAGE BROKER
@@ -216,6 +217,7 @@ services:
       options:
         fluentd-address: localhost:24224
         tag: webshop.user-service
+        fluentd-async: "true"
 
   product-service:
     build: ./product-service
@@ -238,6 +240,7 @@ services:
       options:
         fluentd-address: localhost:24224
         tag: webshop.product-service
+        fluentd-async: "true"
 
   order-service:
     build: ./order-service
@@ -262,6 +265,7 @@ services:
       options:
         fluentd-address: localhost:24224
         tag: webshop.order-service
+        fluentd-async: "true"
 
   inventory-service:
     build: ./inventory-service
@@ -284,6 +288,7 @@ services:
       options:
         fluentd-address: localhost:24224
         tag: webshop.inventory-service
+        fluentd-async: "true"
 
   payment-service:
     build: ./payment-service
@@ -308,6 +313,7 @@ services:
       options:
         fluentd-address: localhost:24224
         tag: webshop.payment-service
+        fluentd-async: "true"
 
   notification-service:
     build: ./notification-service
@@ -330,6 +336,7 @@ services:
       options:
         fluentd-address: localhost:24224
         tag: webshop.notification-service
+        fluentd-async: "true"
 
   # ============================================================
   # MONITORING - PROMETHEUS + GRAFANA + ALERTMANAGER

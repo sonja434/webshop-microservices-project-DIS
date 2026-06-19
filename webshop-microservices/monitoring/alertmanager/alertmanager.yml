@@ -24,14 +24,13 @@ receivers:
     email_configs:
       - to: '${MAIL_USERNAME}'
         send_resolved: true
-        headers:
-          subject: '{{ .Status | toUpper }} - {{ .CommonLabels.alertname }}'
-        body: |
+        html: |
           {{ range .Alerts }}
-          Alert: {{ .Annotations.summary }}
-          Description: {{ .Annotations.description }}
-          Severity: {{ .Labels.severity }}
-          Service: {{ .Labels.job }}
+          Alert: {{ .Annotations.summary }}<br/>
+          Description: {{ .Annotations.description }}<br/>
+          Severity: {{ .Labels.severity }}<br/>
+          Service: {{ .Labels.job }}<br/>
+          <hr/>
           {{ end }}
 
 inhibit_rules:

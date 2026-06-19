@@ -18,7 +18,9 @@ public class InventoryController {
 
     @PostMapping
     public ResponseEntity<InventoryResponse> addInventory(
-            @Valid @RequestBody InventoryRequest request) {
+            @Valid @RequestBody InventoryRequest request,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+        requireAdmin(role);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(inventoryService.addInventory(request));
     }
@@ -49,8 +51,16 @@ public class InventoryController {
     @PutMapping("/{productId}")
     public ResponseEntity<InventoryResponse> updateInventory(
             @PathVariable Long productId,
-            @Valid @RequestBody InventoryRequest request) {
+            @Valid @RequestBody InventoryRequest request,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+        requireAdmin(role);
         return ResponseEntity.ok(
                 inventoryService.updateInventory(productId, request));
+    }
+
+    private void requireAdmin(String role) {
+        if (role == null || !role.equals("ADMIN")) {
+            throw new RuntimeException("Access denied: ADMIN role required");
+        }
     }
 }
