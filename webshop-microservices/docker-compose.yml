@@ -250,6 +250,12 @@ services:
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - DB_USERNAME=${DB_USERNAME:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8083/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   inventory-service:
     build: ./inventory-service
@@ -284,6 +290,8 @@ services:
         condition: service_healthy
       fluentd:
         condition: service_started
+      order-service:
+        condition: service_healthy
     networks:
       - webshop-network
     environment:
@@ -308,7 +316,7 @@ services:
     environment:
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - MAIL_USERNAME=${MAIL_USERNAME:-ssekulic239@gmail.com}
-      - MAIL_PASSWORD=${MAIL_PASSWORD:-tzpy vlji fyue udhd}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-dztm wfif ouvt prfx}
 
   # ============================================================
   # MONITORING - PROMETHEUS + GRAFANA + ALERTMANAGER
@@ -343,7 +351,7 @@ services:
       - '--storage.path=/alertmanager'
     environment:
       - MAIL_USERNAME=${MAIL_USERNAME:-ssekulic239@gmail.com}
-      - MAIL_PASSWORD=${MAIL_PASSWORD:-tzpy vlji fyue udhd}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-dztm wfif ouvt prfx}
 
   grafana:
     image: grafana/grafana:latest
