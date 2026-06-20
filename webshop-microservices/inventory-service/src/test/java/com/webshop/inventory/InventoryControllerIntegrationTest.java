@@ -41,6 +41,7 @@ class InventoryControllerIntegrationTest {
         request.setQuantity(100);
 
         mockMvc.perform(post("/api/inventory")
+                        .header("X-User-Role", "ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -55,6 +56,7 @@ class InventoryControllerIntegrationTest {
         request.setQuantity(100);
 
         mockMvc.perform(post("/api/inventory")
+                        .header("X-User-Role", "ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
@@ -72,6 +74,7 @@ class InventoryControllerIntegrationTest {
         request.setQuantity(10);
 
         mockMvc.perform(post("/api/inventory")
+                        .header("X-User-Role", "ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
@@ -89,6 +92,7 @@ class InventoryControllerIntegrationTest {
         request.setQuantity(100);
 
         mockMvc.perform(post("/api/inventory")
+                        .header("X-User-Role", "ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());

@@ -46,6 +46,7 @@ class ProductControllerIntegrationTest {
         request.setImageUrl("http://example.com/image.jpg");
 
         mockMvc.perform(post("/api/products")
+                        .header("X-User-Role", "ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -63,6 +64,7 @@ class ProductControllerIntegrationTest {
         request.setImageUrl("http://example.com/image.jpg");
 
         mockMvc.perform(post("/api/products")
+                        .header("X-User-Role", "ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
@@ -83,6 +85,7 @@ class ProductControllerIntegrationTest {
         request.setImageUrl("http://example.com/image.jpg");
 
         String response = mockMvc.perform(post("/api/products")
+                        .header("X-User-Role", "ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -108,6 +111,7 @@ class ProductControllerIntegrationTest {
         request.setImageUrl("http://example.com/image.jpg");
 
         String response = mockMvc.perform(post("/api/products")
+                        .header("X-User-Role", "ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -117,7 +121,8 @@ class ProductControllerIntegrationTest {
 
         Long id = objectMapper.readTree(response).get("id").asLong();
 
-        mockMvc.perform(delete("/api/products/" + id))
+        mockMvc.perform(delete("/api/products/" + id)
+                        .header("X-User-Role", "ADMIN"))
                 .andExpect(status().isNoContent());
     }
 }
