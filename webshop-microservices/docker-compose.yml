@@ -60,17 +60,13 @@ services:
     depends_on:
       config-server:
         condition: service_healthy
+      fluentd:
+        condition: service_started
     networks:
       - webshop-network
     environment:
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - JWT_SECRET=${JWT_SECRET:-webshop-super-secret-key-must-be-at-least-256-bits-long}
-    logging:
-      driver: fluentd
-      options:
-        fluentd-address: localhost:24224
-        tag: webshop.api-gateway
-        fluentd-async: "true"
 
   # ============================================================
   # MESSAGE BROKER
@@ -205,6 +201,8 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
+      fluentd:
+        condition: service_started
     networks:
       - webshop-network
     environment:
@@ -212,12 +210,6 @@ services:
       - DB_USERNAME=${DB_USERNAME:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
       - JWT_SECRET=${JWT_SECRET:-webshop-super-secret-key-must-be-at-least-256-bits-long}
-    logging:
-      driver: fluentd
-      options:
-        fluentd-address: localhost:24224
-        tag: webshop.user-service
-        fluentd-async: "true"
 
   product-service:
     build: ./product-service
@@ -229,18 +221,14 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
+      fluentd:
+        condition: service_started
     networks:
       - webshop-network
     environment:
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - DB_USERNAME=${DB_USERNAME:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
-    logging:
-      driver: fluentd
-      options:
-        fluentd-address: localhost:24224
-        tag: webshop.product-service
-        fluentd-async: "true"
 
   order-service:
     build: ./order-service
@@ -254,18 +242,14 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      fluentd:
+        condition: service_started
     networks:
       - webshop-network
     environment:
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - DB_USERNAME=${DB_USERNAME:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
-    logging:
-      driver: fluentd
-      options:
-        fluentd-address: localhost:24224
-        tag: webshop.order-service
-        fluentd-async: "true"
 
   inventory-service:
     build: ./inventory-service
@@ -277,18 +261,14 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
+      fluentd:
+        condition: service_started
     networks:
       - webshop-network
     environment:
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - DB_USERNAME=${DB_USERNAME:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
-    logging:
-      driver: fluentd
-      options:
-        fluentd-address: localhost:24224
-        tag: webshop.inventory-service
-        fluentd-async: "true"
 
   payment-service:
     build: ./payment-service
@@ -302,18 +282,14 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      fluentd:
+        condition: service_started
     networks:
       - webshop-network
     environment:
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - DB_USERNAME=${DB_USERNAME:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
-    logging:
-      driver: fluentd
-      options:
-        fluentd-address: localhost:24224
-        tag: webshop.payment-service
-        fluentd-async: "true"
 
   notification-service:
     build: ./notification-service
@@ -325,18 +301,14 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      fluentd:
+        condition: service_started
     networks:
       - webshop-network
     environment:
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - MAIL_USERNAME=${MAIL_USERNAME:-ssekulic239@gmail.com}
       - MAIL_PASSWORD=${MAIL_PASSWORD:-tzpy vlji fyue udhd}
-    logging:
-      driver: fluentd
-      options:
-        fluentd-address: localhost:24224
-        tag: webshop.notification-service
-        fluentd-async: "true"
 
   # ============================================================
   # MONITORING - PROMETHEUS + GRAFANA + ALERTMANAGER
@@ -392,7 +364,7 @@ services:
   # ============================================================
 
   elasticsearch:
-    image: elasticsearch:8.11.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.15
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
@@ -406,9 +378,9 @@ services:
       - webshop-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9200"]
-      interval: 30s
+      interval: 15s
       timeout: 10s
-      retries: 5
+      retries: 10
 
   fluentd:
     build: ./monitoring/efk/fluentd
@@ -418,6 +390,8 @@ services:
       - "24224:24224/udp"
     volumes:
       - ./monitoring/efk/fluentd/fluent.conf:/fluentd/etc/fluent.conf
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - webshop-network
     depends_on:
@@ -425,7 +399,7 @@ services:
         condition: service_healthy
 
   kibana:
-    image: kibana:8.11.0
+    image: docker.elastic.co/kibana/kibana:7.17.15
     container_name: kibana
     ports:
       - "5601:5601"
