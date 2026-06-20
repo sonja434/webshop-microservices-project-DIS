@@ -149,6 +149,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build Maven packages
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: mvn clean package -DskipTests -f pom.xml
+
       - name: Create .env file
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
