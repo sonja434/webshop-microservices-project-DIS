@@ -136,7 +136,7 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-notification-service:latest
 
   # ============================================================
-  # DEPLOY
+  # DEPLOY - verifikacija da kompletan sistem radi zajedno
   # ============================================================
   deploy-dev:
     name: Deploy to Development
@@ -149,6 +149,35 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy with Docker Compose
+      - name: Create .env file
         working-directory: ${{ env.PROJECT_DIR }}
-        run: echo "Deploy to development environment using docker-compose"
+        run: |
+          echo "DB_USERNAME=postgres" >> .env
+          echo "DB_PASSWORD=postgres123" >> .env
+          echo "JWT_SECRET=webshop-super-secret-key-must-be-at-least-256-bits-long" >> .env
+          echo "MAIL_USERNAME=test@example.com" >> .env
+          echo "MAIL_PASSWORD=testpassword" >> .env
+
+      - name: Deploy stack with Docker Compose
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: docker compose up -d --build eureka-server config-server api-gateway user-service product-service order-service inventory-service payment-service notification-service user-db product-db order-db inventory-db payment-db rabbitmq
+
+      - name: Wait for services to become healthy
+        run: sleep 90
+
+      - name: Verify Eureka has registered services
+        run: |
+          curl -f http://localhost:8761/actuator/health || (echo "Eureka health check failed" && exit 1)
+
+      - name: Verify API Gateway is reachable
+        run: |
+          curl -f http://localhost:8080/actuator/health || (echo "API Gateway health check failed" && exit 1)
+
+      - name: Show running containers
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: docker compose ps
+
+      - name: Tear down stack
+        if: always()
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: docker compose down -v
